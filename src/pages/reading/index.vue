@@ -5,6 +5,7 @@ import { readingId } from '../../data/ids'
 import { useLearningFilter } from '../../composables/progress'
 const { query, filter, matches, progress } = useLearningFilter()
 
+const topicNumbers = new Map(words.flatMap(cat => cat.words.map((word, index) => [readingId(cat.title, word), index + 1])))
 const ws = computed(() => words.map(cat => ({ ...cat, words: cat.words.filter(w => matches(readingId(cat.title, w), w.slice(1).flat().join(' '))) })).filter(cat => cat.words.length))
 const ids = words.flatMap(cat => cat.words.map(w => readingId(cat.title, w)))
 const visibleIds = computed(() => ws.value.flatMap(cat => cat.words.map(w => readingId(cat.title, w))))
@@ -41,8 +42,8 @@ function play(word) {
             <thead class="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-700 dark:text-gray-400">
               <tr>
                 <th class="px-6 py-3">学习状态</th>
-                <th class="w-0 px-6 py-3">
-                  排名
+                <th class="w-0 px-6 py-3 word-sequence">
+                  本话题序号
                 </th>
                 <th class="w-0 px-6 py-3" />
                 <th scope="col" class="w-0 px-6 py-3">
@@ -57,6 +58,7 @@ function play(word) {
                 <th scope="col" class="px-6 py-3">
                   同义替换
                 </th>
+                <th scope="col" class="px-6 py-3 text-right word-sequence">总序号</th>
               </tr>
             </thead>
             <tbody>
@@ -67,8 +69,8 @@ function play(word) {
                 class="border-b bg-white dark:border-gray-700 dark:bg-gray-800"
               >
                 <td class="px-6 py-4"><LearningStatus :item-id="readingId(cat.title, w)" :word="w[1]" /></td>
-                <td class="px-6 py-4">
-                  {{ w[0] }}
+                <td class="px-6 py-4 word-sequence">
+                  {{ topicNumbers.get(readingId(cat.title, w)) }}
                 </td>
                 <td class="px-6 py-4">
                   <button type="button" class="i-carbon-volume-up-filled block" :aria-label="`播放 ${w[1]} 发音`" @click="play(w[1])" />
@@ -93,6 +95,7 @@ function play(word) {
                   <details v-if="hideAnswers" :key="`answer-${readingId(cat.title, w)}`"><summary>查看同义替换</summary>{{ w[4].join(', ') }}<br>{{ w[5] }}</details>
                   <template v-else>{{ w[4].join(', ') }}<br>{{ w[5] }}</template>
                 </td>
+                <td class="px-6 py-4 text-right word-sequence">{{ w[0] }}</td>
               </tr>
             </tbody>
           </table>

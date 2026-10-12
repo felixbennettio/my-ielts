@@ -23,6 +23,7 @@ try { savedChapter = localStorage.getItem(CHAPTER_KEY) } catch {}
 const category = ref(savedChapter && chapters.includes(savedChapter) ? savedChapter : chapters[0])
 
 const refVocabulary = reactive(vocabulary)
+const topicNumbers = computed(() => new Map(refVocabulary[category.value].words.flat().map((item, index) => [item.id, index + 1])))
 const currentIds = computed(() => refVocabulary[category.value].words.flat().map(item => vocabularyId(category.value, item)))
 const visibleGroups = computed(() => refVocabulary[category.value].words.map(group => group.filter(item => matches(vocabularyId(category.value, item), [item.word.join(' '), item.meaning, item.extra, item.example].join(' ')))))
 const visibleIds = computed(() => visibleGroups.value.flat().map(item => vocabularyId(category.value, item)))
@@ -202,8 +203,8 @@ function copyAllError() {
                 <thead class="bg-gray-50 dark:bg-gray-700">
                   <tr>
                     <th class="p-4 text-left text-xs font-medium tracking-wider text-gray-500 dark:text-white">学习状态</th>
-                    <th class="p-4 text-left text-xs font-medium tracking-wider text-gray-500 dark:text-white">
-                      #
+                    <th class="p-4 text-left text-xs font-medium tracking-wider text-gray-500 dark:text-white word-sequence">
+                      本话题序号
                     </th>
                     <th class="p-4 text-xs font-medium tracking-wider text-gray-500 dark:text-white">
                       <br>
@@ -223,12 +224,13 @@ function copyAllError() {
                     <th class="p-4 text-left text-xs font-medium tracking-wider text-gray-500 dark:text-white">
                       拓展
                     </th>
+                    <th class="p-4 text-right text-xs font-medium tracking-wider text-gray-500 dark:text-white word-sequence">总序号</th>
                   </tr>
                 </thead>
                 <tbody class="bg-white dark:bg-gray-800">
                   <tr class="bg-hex-f3f3f3">
                     <td
-                      colspan="8"
+                      colspan="9"
                       class="px-4 py-6 text-sm font-normal text-gray-900 dark:bg-gray-500 dark:text-white"
                     >
                       <div class="flex flex-row">
@@ -250,8 +252,8 @@ function copyAllError() {
                       :class="{ 'learning-mastered-row': progress.getStatus(vocabularyId(category, item)) === 'mastered', 'bg-gray-50 dark:bg-gray-700': item.id % 2 === 0, [`group-color-${i % 15}`]: true }" class="text-sm text-gray-900 dark:text-white"
                     >
                       <td class="p-4"><LearningStatus :item-id="vocabularyId(category, item)" :word="item.word.join(', ')" /></td>
-                      <td class="p-4">
-                        {{ item.id }}
+                      <td class="p-4 word-sequence">
+                        {{ topicNumbers.get(item.id) }}
                       </td>
                       <td>
                         <button type="button" class="i-ph-speaker-simple-high-bold inline-block" :aria-label="`播放 ${item.word[0]} 读音`"
@@ -300,6 +302,7 @@ function copyAllError() {
                       <td class="p-4">
                         {{ isTrainingModel ? '' : item.extra }}
                       </td>
+                      <td class="p-4 text-right text-gray-500 dark:text-gray-400 word-sequence">{{ item.id }}</td>
                     </tr>
                   </template>
                 </tbody>

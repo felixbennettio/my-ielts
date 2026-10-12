@@ -6,6 +6,7 @@ import { useLearningFilter } from '../../composables/progress'
 const chapter = 'Chapter2 拼写规范'
 const chapterInfo = chapterData[chapter]
 const { query, filter, matches, progress } = useLearningFilter()
+const rowNumbers = new Map(chapterInfo.rows.map((row, index) => [row[0], index + 1]))
 const ids = chapterInfo.rows.map(row => corpusId(chapter, row[0]))
 const rows = computed(() => chapterInfo.rows.filter(row => matches(corpusId(chapter, row[0]), row.join(' '))))
 const visibleIds = computed(() => rows.value.map(row => corpusId(chapter, row[0])))
@@ -22,12 +23,14 @@ function play(word: string) {
     <LearningToolbar v-model:query="query" v-model:filter="filter" :ids="ids" :visible-ids="visibleIds" />
     <div class="overflow-x-auto">
       <table class="w-full text-left text-sm">
-        <thead class="bg-gray-50 dark:bg-gray-700"><tr><th class="p-4">学习状态</th><th class="p-4">发音</th><th v-for="column in chapterInfo.columns" :key="column" class="p-4">{{ column }}</th></tr></thead>
+        <thead class="bg-gray-50 dark:bg-gray-700"><tr><th class="p-4">学习状态</th><th class="p-4 word-sequence">本话题序号</th><th class="p-4">发音</th><th v-for="column in chapterInfo.columns" :key="column" class="p-4">{{ column }}</th><th class="p-4 text-right word-sequence">总序号</th></tr></thead>
         <tbody>
           <tr v-for="row in rows" :key="corpusId(chapter, row[0])" class="border-b dark:border-gray-700" :class="{ 'learning-mastered-row': progress.getStatus(corpusId(chapter, row[0])) === 'mastered' }">
             <td class="p-4"><LearningStatus :item-id="corpusId(chapter, row[0])" :word="row[0]" /></td>
+            <td class="p-4 word-sequence">{{ rowNumbers.get(row[0]) }}</td>
             <td class="p-4"><button type="button" class="i-carbon-volume-up-filled" :aria-label="`播放 ${row[0]} 发音`" @click="play(row[0])" /></td>
             <td v-for="(cell, index) in row" :key="index" class="p-4">{{ cell }}</td>
+            <td class="p-4 text-right word-sequence">{{ rowNumbers.get(row[0]) }}</td>
           </tr>
         </tbody>
       </table>

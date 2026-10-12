@@ -70,8 +70,8 @@ function next(index: number) {
       <table class="w-full text-left text-sm text-gray-500 dark:text-gray-400">
         <thead class="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-700 dark:text-gray-400">
           <tr>
-            <th class="w-0 px-6 py-3">
-              #
+            <th class="w-0 px-6 py-3 word-sequence">
+              本话题序号
             </th>
 
             <th class="w-0 px-6 py-3">
@@ -86,6 +86,7 @@ function next(index: number) {
             <th class="px-6 py-3">
               结果
             </th>
+            <th scope="col" class="px-6 py-3 text-right word-sequence">总序号</th>
           </tr>
         </thead>
         <tbody>
@@ -137,6 +138,7 @@ function next(index: number) {
                 {{ w.result.errorWords.join(', ') }}
               </p>
             </td>
+            <td class="px-6 py-4 text-right word-sequence">{{ w.index }}</td>
           </tr>
         </tbody>
       </table>

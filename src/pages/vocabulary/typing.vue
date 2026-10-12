@@ -126,7 +126,7 @@ onMounted(() => {
         <LearningStatus :item-id="vocabularyId(selectedChapter, currentWordData)" :word="currentWord" />
       </div>
       <!-- Stats -->
-      <div class="grid grid-cols-3 gap-4 mb-8">
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
         <div
           class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 text-center"
         >
@@ -145,8 +145,12 @@ onMounted(() => {
         <div
           class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 text-center"
         >
-          <div class="text-xs text-gray-500 uppercase tracking-wider mb-1">进度</div>
+          <div class="text-xs text-gray-500 uppercase tracking-wider mb-1">本话题序号</div>
           <div class="text-2xl font-bold dark:text-white">{{ currentWordIndex + 1 }} / {{ words.length }}</div>
+        </div>
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 text-center">
+          <div class="text-xs text-gray-500 uppercase tracking-wider mb-1">总序号</div>
+          <div class="text-2xl font-bold dark:text-white">{{ currentWordData?.id || '—' }}</div>
         </div>
       </div>
 

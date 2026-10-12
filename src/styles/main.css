@@ -134,3 +134,5 @@ progress::-webkit-progress-value { background: #0f766e; border-radius: 5px; }
   .fixed-audio-player audio { grid-column: 1 / -1; grid-row: 2; }
   .fixed-audio-toggle { padding: 9px 14px; }
 }
+
+.word-sequence { white-space: nowrap; font-variant-numeric: tabular-nums; }
