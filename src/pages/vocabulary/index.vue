@@ -57,14 +57,14 @@ function calcStats() {
 watch(category, () => { isFinishTraining.value = false })
 
 function onAudioKeydown(ev) {
-  if (ev.target instanceof HTMLElement && ev.target.closest('input, textarea, select, button, a, label')) return
-  if (!player.current.value) return
-  if (['ArrowLeft', 'ArrowRight', ' '].includes(ev.key)) {
+  if (ev.defaultPrevented || ev.key !== ' ') return
+  if (ev.target instanceof HTMLElement && ev.target.closest('input, textarea, select, button, a, label, .fixed-audio-player, [contenteditable]')) return
+  if (player.current.value) {
     ev.preventDefault()
-    if (ev.key === ' ') player.toggle()
-    else player.seekBy(ev.key === 'ArrowLeft' ? -5 : 5)
+    player.toggle()
   }
 }
+
 onMounted(() => document.addEventListener('keydown', onAudioKeydown))
 onUnmounted(() => document.removeEventListener('keydown', onAudioKeydown))
 
@@ -150,16 +150,8 @@ function copyAllError() {
           <span class="text-base font-normal text-gray-500 dark:text-gray-400">涵盖雅思必备核心词，逻辑词群记忆法</span>
         </div>
         <div class="items-center sm:flex">
-          <div class="flex items-center">
-            <select
-              v-model="category"
-              class="block w-full flex-1 border border-gray-300 rounded-lg bg-gray-50 p-2.5 text-sm text-gray-900 dark:border-gray-600 focus:border-blue-500 dark:bg-gray-700 dark:text-white focus:ring-blue-500 dark:focus:border-blue-500 dark:focus:ring-blue-500 dark:placeholder-gray-400"
-            >
-
-              <option v-for="(_, k) in refVocabulary" :key="k" :value="k">
-                {{ k }}
-              </option>
-            </select>
+          <div class="vocabulary-topic-actions">
+            <TopicNavigator v-model="category" :topics="chapters" />
 
 
             <label class="ml-2 inline-flex cursor-pointer items-center">

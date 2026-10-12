@@ -104,21 +104,12 @@ onMounted(() => {
   <div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-3xl mx-auto">
       <!-- Header -->
-      <div class="flex justify-between items-center mb-8">
+      <div class="typing-topic-header">
         <div>
           <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white">单词打字练习</h1>
           <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">照着背景单词输入，提升你的速度</p>
         </div>
-        <select
-          v-model="selectedChapter"
-          class="block w-48 border border-gray-300 rounded-lg bg-white p-2.5 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-blue-500"
-        >
-          <option
-            v-for="c in chapters"
-            :key="c"
-            :value="c"
-          >{{ c }}</option>
-        </select>
+        <TopicNavigator v-model="selectedChapter" :topics="chapters" />
       </div>
 
       <div v-if="currentWordData && !isFinished" class="mb-6 flex items-center justify-between">
