@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import chapterData from './spelling_convention'
+import { useAudioPlayer } from '../../composables/audioPlayer'
 import { corpusId } from '../../data/ids'
 import { useLearningFilter } from '../../composables/progress'
 const chapter = 'Chapter2 拼写规范'
@@ -8,13 +9,9 @@ const { query, filter, matches, progress } = useLearningFilter()
 const ids = chapterInfo.rows.map(row => corpusId(chapter, row[0]))
 const rows = computed(() => chapterInfo.rows.filter(row => matches(corpusId(chapter, row[0]), row.join(' '))))
 const visibleIds = computed(() => rows.value.map(row => corpusId(chapter, row[0])))
-let audio: HTMLAudioElement | null = null
 function play(word: string) {
-  audio?.pause()
-  audio = new Audio(`https://dict.youdao.com/dictvoice?audio=${encodeURIComponent(word.split(', ')[0])}&type=1`)
-  audio.play().catch(() => {})
+  useAudioPlayer().play(`https://dict.youdao.com/dictvoice?audio=${encodeURIComponent(word.split(', ')[0])}&type=1`, `听力拼写 · ${word}`)
 }
-onUnmounted(() => audio?.pause())
 </script>
 
 <template>

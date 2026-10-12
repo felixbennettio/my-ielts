@@ -12,4 +12,5 @@ const { storageError } = useProgress()
     </div>
   </main>
   <TheFooter />
+  <FixedAudioPlayer />
 </template>

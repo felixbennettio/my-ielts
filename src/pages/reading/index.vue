@@ -1,5 +1,6 @@
 <script setup>
 import words from './reading538words'
+import { useAudioPlayer } from '../../composables/audioPlayer'
 import { readingId } from '../../data/ids'
 import { useLearningFilter } from '../../composables/progress'
 const { query, filter, matches, progress } = useLearningFilter()
@@ -9,17 +10,9 @@ const ids = words.flatMap(cat => cat.words.map(w => readingId(cat.title, w)))
 const visibleIds = computed(() => ws.value.flatMap(cat => cat.words.map(w => readingId(cat.title, w))))
 
 const hideAnswers = ref(false)
-onUnmounted(() => audio?.pause())
 
-let audio = null
 function play(word) {
-  if (audio) {
-    audio.pause()
-    audio.currentTime = 0
-  }
-  audio = document.createElement('audio')
-  audio.src = `https://dict.youdao.com/dictvoice?audio=${encodeURIComponent(word)}&type=1`
-  audio.play().catch(() => {})
+  useAudioPlayer().play(`https://dict.youdao.com/dictvoice?audio=${encodeURIComponent(word)}&type=1`, `阅读词汇 · ${word}`)
 }
 </script>
 

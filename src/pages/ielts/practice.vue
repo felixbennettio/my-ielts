@@ -1,5 +1,6 @@
 <script setup lang="ts" generic="T extends any, O extends any">
 import words from './listening179.json'
+import { useAudioPlayer } from '../../composables/audioPlayer'
 
 const ws = reactive(words.map((v) => {
   const item = {
@@ -24,9 +25,7 @@ function onKeydown(e: KeyboardEvent, word: string) {
 }
 
 function play(word: string) {
-  const audio = document.createElement('audio')
-  audio.src = `${import.meta.env.BASE_URL}179_audios/${word}.mp3`
-  audio.play()
+  useAudioPlayer().play(`${import.meta.env.BASE_URL}179_audios/${word}.mp3`, `听力考点词 · ${word}`)
 }
 function next(index: number) {
   const i = index + 1

@@ -1,5 +1,6 @@
 <script setup>
 import words from './listening179.json'
+import { useAudioPlayer } from '../../composables/audioPlayer'
 import { listeningId } from '../../data/ids'
 import { useLearningFilter } from '../../composables/progress'
 const { query, filter, matches, progress } = useLearningFilter()
@@ -7,13 +8,8 @@ const { query, filter, matches, progress } = useLearningFilter()
 const ws = computed(() => words.filter(w => matches(listeningId(w.word), [w.word, w.meaning, ...w.replace].join(' '))))
 const ids = words.map(w => listeningId(w.word))
 const visibleIds = computed(() => ws.value.map(w => listeningId(w.word)))
-let audio = null
-onUnmounted(() => audio?.pause())
 function play(word) {
-  audio?.pause()
-  audio = document.createElement('audio')
-  audio.src = `179_audios/${word}.mp3`
-  audio.play().catch(() => {})
+  useAudioPlayer().play(`${import.meta.env.BASE_URL}179_audios/${word}.mp3`, `听力考点词 · ${word}`)
 }
 
 

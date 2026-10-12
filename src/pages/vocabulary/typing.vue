@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import vocabulary from './vocabulary'
+import { useAudioPlayer } from '../../composables/audioPlayer'
 import { vocabularyId } from '../../data/ids'
 
 const CHAPTER_KEY = 'vocabulary_typing_chapter'
@@ -41,21 +42,11 @@ function reset() {
   playAudio()
 }
 
-let audio = null as HTMLAudioElement | null
 function playAudio() {
   const category = selectedChapter.value
   const word = currentWord.value
-  const audioPath = `vocabulary/audio/${category}/${word}.mp3`
-  if (audio) {
-    audio.pause()
-    audio.currentTime = 0
-  }
-  audio = document.createElement('audio')
-  audio.src = audioPath
-  audio.play().catch(() => {})
+  if (word) useAudioPlayer().play(`${import.meta.env.BASE_URL}vocabulary/audio/${category}/${word}.mp3`, `词汇练习 · ${word}`)
 }
-
-onUnmounted(() => audio?.pause())
 
 // Normalize whitespace: replace non-breaking spaces and other unicode spaces with regular space
 function normalizeInput(s: string) {
@@ -221,7 +212,7 @@ onMounted(() => {
         <!-- Audio trigger hint -->
         <div class="absolute top-4 right-4">
           <button
-            @click="playAudio"
+            aria-label="播放当前单词读音" @click="playAudio"
             class="p-2 text-gray-400 hover:text-blue-500 transition-colors"
           >
             <i class="i-ph-speaker-high-bold text-xl block"></i>

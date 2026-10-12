@@ -1,5 +1,6 @@
 <script setup>
 import words from './listening179.json'
+import { useAudioPlayer } from '../../composables/audioPlayer'
 import { listeningId } from '../../data/ids'
 
 const ws = reactive(words.map((v) => {
@@ -24,13 +25,8 @@ function onKeydown(e, word) {
   }
 }
 
-let audio = null
-onUnmounted(() => audio?.pause())
 function play(word) {
-  audio?.pause()
-  audio = document.createElement('audio')
-  audio.src = `${import.meta.env.BASE_URL}179_audios/${word}.mp3`
-  audio.play().catch(() => {})
+  useAudioPlayer().play(`${import.meta.env.BASE_URL}179_audios/${word}.mp3`, `听力考点词 · ${word}`)
 }
 function next(index) {
   const i = index + 1

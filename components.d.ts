@@ -7,6 +7,7 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
+    FixedAudioPlayer: typeof import('./src/components/FixedAudioPlayer.vue')['default']
     LearningStatus: typeof import('./src/components/LearningStatus.vue')['default']
     LearningToolbar: typeof import('./src/components/LearningToolbar.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']

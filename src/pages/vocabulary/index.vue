@@ -1,8 +1,10 @@
 
 <script setup generic="T extends any, O extends any">
 import vocabulary from './vocabulary'
+import { useAudioPlayer } from '../../composables/audioPlayer'
 import { vocabularyId } from '../../data/ids'
 import { useLearningFilter } from '../../composables/progress'
+const player = useAudioPlayer()
 const { query, filter, matches, progress } = useLearningFilter()
 
 const CHAPTER_KEY = 'vocabulary_chapter'
@@ -51,69 +53,25 @@ function calcStats() {
   return `${missing} 个未完成，${correct} 个正确，${error} 个错误`
 }
 
-onMounted(() => {
-  // 只能同时播放一个音频
-  const audioTags = document.getElementsByTagName('audio')
-  for (const audio of audioTags) {
-    audio.onplay = () => {
-      for (const _audio of audioTags) {
-        _audio.blur()
-        if (audio !== _audio)
-          _audio.pause()
-      }
-    }
-  }
-})
-
-watch(category, async () => {
-  isFinishTraining.value = false
-  await nextTick()
-  for (const el of document.getElementsByTagName('audio'))
-    el.load()
-})
+watch(category, () => { isFinishTraining.value = false })
 
 function onAudioKeydown(ev) {
-  if (ev.target instanceof HTMLElement && ev.target.closest('input, textarea, select, button, a, label'))
-    return
-  // 激活的那个音频可以通过方向键进行快进/退
+  if (ev.target instanceof HTMLElement && ev.target.closest('input, textarea, select, button, a, label')) return
+  if (!player.current.value) return
   if (['ArrowLeft', 'ArrowRight', ' '].includes(ev.key)) {
     ev.preventDefault()
-    const audioTags = document.getElementsByTagName('audio')
-    const keyMap = {
-      ArrowLeft: -5,
-      ArrowRight: 5,
-    }
-    for (const audioTag of audioTags) {
-      audioTag.blur()
-      if (keyMap[ev.key]) {
-        const step = keyMap[ev.key]
-        audioTag.currentTime = audioTag.currentTime + step
-        // console.log(step, audioT ag.currentTime)
-      }
-      if (ev.key === ' ') {
-        if (audioTag.paused)
-          audioTag.play()
-        else
-          audioTag.pause()
-      }
-    }
+    if (ev.key === ' ') player.toggle()
+    else player.seekBy(ev.key === 'ArrowLeft' ? -5 : 5)
   }
 }
 onMounted(() => document.addEventListener('keydown', onAudioKeydown))
-onUnmounted(() => {
-  document.removeEventListener('keydown', onAudioKeydown)
-  audio?.pause()
-})
+onUnmounted(() => document.removeEventListener('keydown', onAudioKeydown))
 
-let audio = null
-function play(audioPath) {
-  if (audio) {
-    audio.pause()
-    audio.currentTime = 0
-  }
-  audio = document.createElement('audio')
-  audio.src = audioPath
-  audio.play().catch(() => {})
+function play(audioPath, title) {
+  player.play(`${import.meta.env.BASE_URL}${audioPath}`, title || '词汇读音')
+}
+function playChapter() {
+  play(`vocabulary/audio/${refVocabulary[category.value].audio}`, `词汇整章 · ${category.value}`)
 }
 
 function copyText(item) {
@@ -132,9 +90,9 @@ function onInputKeydown(e) {
   }
 }
 
-function onInputFocusIn(e, audioPath) {
+function onInputFocusIn(e, audioPath, word) {
   if (isAutoPlayWordAudio.value)
-    play(audioPath)
+    play(audioPath, `词汇读音 · ${word}`)
 }
 
 function onInputFocusOut(e, item) {
@@ -279,9 +237,7 @@ function copyAllError() {
                           （ {{ refVocabulary[category].groupCount }} 组 {{ refVocabulary[category].wordCount }} 个词 ）
                         </div>
                         <div class="justify-items-end">
-                          <audio preload="none" controls class="chapter">
-                            <source :src="`vocabulary/audio/${refVocabulary[category].audio}`" type="audio/mpeg">
-                          </audio>
+                          <button type="button" class="learning-primary" @click="playChapter">播放本章音频</button>
                         </div>
                       </div>
                     </td>
@@ -298,10 +254,8 @@ function copyAllError() {
                         {{ item.id }}
                       </td>
                       <td>
-                        <i
-                          class="i-ph-speaker-simple-high-bold inline-block cursor-pointer"
-                          @click="play(`vocabulary/audio/${category}/${item.word[0]}.mp3`)"
-                        />
+                        <button type="button" class="i-ph-speaker-simple-high-bold inline-block" :aria-label="`播放 ${item.word[0]} 读音`"
+                          @click="play(`vocabulary/audio/${category}/${item.word[0]}.mp3`, `词汇读音 · ${item.word[0]}`)" />
 
                         <template v-if="isTrainingModel">
                           <i
@@ -312,7 +266,7 @@ function copyAllError() {
                             :id="item.id" autocomplete="off" :class="getInputStyleClass(item)"
                             type="text"
                             @focusout="onInputFocusOut($event, item)"
-                            @focusin="onInputFocusIn($event, `vocabulary/audio/${category}/${item.word[0]}.mp3`)"
+                            @focusin="onInputFocusIn($event, `vocabulary/audio/${category}/${item.word[0]}.mp3`, item.word[0])"
                             @keydown="onInputKeydown"
                           >
                         </template>
