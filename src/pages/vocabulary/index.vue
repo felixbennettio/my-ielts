@@ -1,6 +1,9 @@
-<!-- eslint-disable eslint-comments/no-unlimited-disable -->
+
 <script setup generic="T extends any, O extends any">
 import vocabulary from './vocabulary'
+import { vocabularyId } from '../../data/ids'
+import { useLearningFilter } from '../../composables/progress'
+const { query, filter, matches, progress } = useLearningFilter()
 
 const CHAPTER_KEY = 'vocabulary_chapter'
 
@@ -12,43 +15,19 @@ const isFinishTraining = ref(false)
 const isShowSource = ref(false)
 
 const trainingStats = ref('')
-const keyword = ref('')
 const chapters = Object.keys(vocabulary)
-const category = ref(localStorage.getItem(CHAPTER_KEY) || chapters[0])
+let savedChapter = null
+try { savedChapter = localStorage.getItem(CHAPTER_KEY) } catch {}
+const category = ref(savedChapter && chapters.includes(savedChapter) ? savedChapter : chapters[0])
 
-const loaded = ref(false)
 const refVocabulary = reactive(vocabulary)
-const wordList = computed(() => {
-  const result = structuredClone(vocabulary) // deep clone
-  // const keywordValue = keyword.value.trim().toLowerCase()
-  const categoryValue = category.value
+const currentIds = computed(() => refVocabulary[category.value].words.flat().map(item => vocabularyId(category.value, item)))
+const visibleGroups = computed(() => refVocabulary[category.value].words.map(group => group.filter(item => matches(vocabularyId(category.value, item), [item.word.join(' '), item.meaning, item.extra, item.example].join(' ')))))
+const visibleIds = computed(() => visibleGroups.value.flat().map(item => vocabularyId(category.value, item)))
 
-  if (categoryValue !== '') {
-    // for (const key in result) {
-    //   if (key !== categoryValue)
-    //     delete result[key]
-    // }
-    return { [categoryValue]: result[categoryValue] }
-  }
-
-  /* if (keywordValue !== '') {
-    for (const key in result) {
-      const category = result[key]
-      const words = []
-      category.words.forEach((group) => {
-        words.push(group.filter((item) => {
-          return item.word.toLowerCase().includes(keywordValue)
-        }))
-      })
-      category.words = words
-    }
-  } */
-  return {}
-})
-
-watch(category, (newVal, oldVal) => {
+watch(category, (newVal) => {
   // console.log(newVal, oldVal)
-  localStorage.setItem(CHAPTER_KEY, newVal)
+  try { localStorage.setItem(CHAPTER_KEY, newVal) } catch {}
 })
 
 function calcStats() {
@@ -56,9 +35,8 @@ function calcStats() {
   let missing = 0
   let correct = 0
   if (isTrainingModel.value) {
-    const cur = refVocabulary[category.value]
     // 遍历所有单词的属性
-    for (const group of cur.words) {
+    for (const group of visibleGroups.value) {
       for (const item of group) {
         if (item.spellValue) {
           if (item.spellError)
@@ -74,8 +52,6 @@ function calcStats() {
 }
 
 onMounted(() => {
-  loaded.value = true
-
   // 只能同时播放一个音频
   const audioTags = document.getElementsByTagName('audio')
   for (const audio of audioTags) {
@@ -89,13 +65,16 @@ onMounted(() => {
   }
 })
 
-onUpdated(() => {
-  // 音频再切换 SRC 之后需要调用一下 load() 不然看不到效果
+watch(category, async () => {
+  isFinishTraining.value = false
+  await nextTick()
   for (const el of document.getElementsByTagName('audio'))
     el.load()
 })
 
-document.addEventListener('keydown', (ev) => {
+function onAudioKeydown(ev) {
+  if (ev.target instanceof HTMLElement && ev.target.closest('input, textarea, select, button, a, label'))
+    return
   // 激活的那个音频可以通过方向键进行快进/退
   if (['ArrowLeft', 'ArrowRight', ' '].includes(ev.key)) {
     ev.preventDefault()
@@ -119,6 +98,11 @@ document.addEventListener('keydown', (ev) => {
       }
     }
   }
+}
+onMounted(() => document.addEventListener('keydown', onAudioKeydown))
+onUnmounted(() => {
+  document.removeEventListener('keydown', onAudioKeydown)
+  audio?.pause()
 })
 
 let audio = null
@@ -129,7 +113,7 @@ function play(audioPath) {
   }
   audio = document.createElement('audio')
   audio.src = audioPath
-  audio.play()
+  audio.play().catch(() => {})
 }
 
 function copyText(item) {
@@ -143,7 +127,8 @@ function onInputKeydown(e) {
   // console.log(key, target.id)
   if (key === 'Enter') {
     // 切换到下一个 input
-    document.getElementById((Number(target.id) + 1).toString())?.focus()
+    const inputs = [...document.querySelectorAll('tr:not([hidden]) input[type=text]')].filter(el => el.getClientRects().length)
+    inputs[inputs.indexOf(target) + 1]?.focus()
   }
 }
 
@@ -197,7 +182,7 @@ function copyAllError() {
 <template>
   <div class="px-4 pt-6 2xl:px-0">
     <div class="border border-gray-200 rounded-lg bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800 sm:p-6">
-      <!-- Card header -->
+
       <div class="items-center justify-between lg:flex">
         <div class="mb-4 lg:mb-0">
           <h3 class="mb-2 text-xl font-bold text-gray-900 dark:text-white">
@@ -211,26 +196,13 @@ function copyAllError() {
               v-model="category"
               class="block w-full flex-1 border border-gray-300 rounded-lg bg-gray-50 p-2.5 text-sm text-gray-900 dark:border-gray-600 focus:border-blue-500 dark:bg-gray-700 dark:text-white focus:ring-blue-500 dark:focus:border-blue-500 dark:focus:ring-blue-500 dark:placeholder-gray-400"
             >
-              <!-- <option value="">
-                全部章节
-              </option> -->
+
               <option v-for="(_, k) in refVocabulary" :key="k" :value="k">
                 {{ k }}
               </option>
             </select>
-            <!-- <input type="text" name="email" class="ml-3 block w-full border border-gray-300 rounded-lg bg-gray-50 p-2.5 text-gray-900 dark:border-gray-600 focus:border-primary-500 dark:bg-gray-700 sm:text-sm dark:text-white focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 dark:placeholder-gray-400" placeholder="关键词"> -->
-            <!-- <div class="relative ml-2 flex-1">
-              <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                <svg class="h-4 w-4 text-gray-500 dark:text-gray-400" aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
-                </svg>
-              </div>
-              <input v-model="keyword" type="search"
-                class="block w-full border border-gray-300 rounded-lg bg-gray-50 p-2.5 pl-10 text-sm text-gray-900 dark:border-gray-600 focus:border-blue-500 dark:bg-gray-700 dark:text-white focus:ring-blue-500 dark:focus:border-blue-500 dark:focus:ring-blue-500 dark:placeholder-gray-400"
-                placeholder="Search">
-            </div> -->
+
+
             <label class="ml-2 inline-flex cursor-pointer items-center">
               <input v-model="isTrainingModel" type="checkbox" class="peer sr-only">
               <div
@@ -262,7 +234,8 @@ function copyAllError() {
           </div>
         </div>
       </div>
-      <!-- Table -->
+      <LearningToolbar v-model:query="query" v-model:filter="filter" :ids="currentIds" :visible-ids="visibleIds" />
+
       <div class="mt-6 flex flex-col">
         <div class="overflow-x-auto rounded-lg">
           <div class="inline-block min-w-full align-middle">
@@ -270,6 +243,7 @@ function copyAllError() {
               <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
                 <thead class="bg-gray-50 dark:bg-gray-700">
                   <tr>
+                    <th class="p-4 text-left text-xs font-medium tracking-wider text-gray-500 dark:text-white">学习状态</th>
                     <th class="p-4 text-left text-xs font-medium tracking-wider text-gray-500 dark:text-white">
                       #
                     </th>
@@ -296,7 +270,7 @@ function copyAllError() {
                 <tbody class="bg-white dark:bg-gray-800">
                   <tr class="bg-hex-f3f3f3">
                     <td
-                      colspan="7"
+                      colspan="8"
                       class="px-4 py-6 text-sm font-normal text-gray-900 dark:bg-gray-500 dark:text-white"
                     >
                       <div class="flex flex-row">
@@ -305,20 +279,21 @@ function copyAllError() {
                           （ {{ refVocabulary[category].groupCount }} 组 {{ refVocabulary[category].wordCount }} 个词 ）
                         </div>
                         <div class="justify-items-end">
-                          <audio controls class="chapter">
+                          <audio preload="none" controls class="chapter">
                             <source :src="`vocabulary/audio/${refVocabulary[category].audio}`" type="audio/mpeg">
                           </audio>
                         </div>
                       </div>
                     </td>
                   </tr>
-                  <template v-for="(wordGroup, i) of refVocabulary[category].words" :key="wordGroup.label">
+                  <template v-for="(wordGroup, i) of visibleGroups" :key="i">
                     <tr
                       v-for="item of wordGroup"
                       v-show="(isTrainingModel && (isOnlyShowErrors ? item.spellError : true)) || !isTrainingModel" :id="`tr_${item.id}`"
                       :key="item.id"
-                      :class="{ 'bg-gray-50 dark:bg-gray-700': item.id % 2 === 0, [`group-color-${i % 15}`]: true }" class="text-sm text-gray-900 dark:text-white"
+                      :class="{ 'learning-mastered-row': progress.getStatus(vocabularyId(category, item)) === 'mastered', 'bg-gray-50 dark:bg-gray-700': item.id % 2 === 0, [`group-color-${i % 15}`]: true }" class="text-sm text-gray-900 dark:text-white"
                     >
+                      <td class="p-4"><LearningStatus :item-id="vocabularyId(category, item)" :word="item.word.join(', ')" /></td>
                       <td class="p-4">
                         {{ item.id }}
                       </td>
@@ -336,8 +311,8 @@ function copyAllError() {
                           <input
                             :id="item.id" autocomplete="off" :class="getInputStyleClass(item)"
                             type="text"
-                            @focusout="onInputFocusOut($event, item)" 
-                            @focusin="onInputFocusIn($event, `vocabulary/audio/${category}/${item.word[0]}.mp3`)" 
+                            @focusout="onInputFocusOut($event, item)"
+                            @focusin="onInputFocusIn($event, `vocabulary/audio/${category}/${item.word[0]}.mp3`)"
                             @keydown="onInputKeydown"
                           >
                         </template>
@@ -379,7 +354,7 @@ function copyAllError() {
           </div>
         </div>
       </div>
-      <!-- Card Footer -->
+
       <div class="flex items-center justify-between pt-3 sm:pt-6">
         <div>
           <p v-if="isTrainingModel">

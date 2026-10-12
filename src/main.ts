@@ -12,6 +12,7 @@ const router = createRouter({
   // 改成 Hash 模式
   history: createWebHashHistory(import.meta.env.BASE_URL),
   routes,
+  scrollBehavior: () => ({ top: 0 }),
 })
 app.use(router)
 app.mount('#app')

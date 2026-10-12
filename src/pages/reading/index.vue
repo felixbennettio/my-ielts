@@ -1,9 +1,15 @@
 <script setup>
 import words from './reading538words'
+import { readingId } from '../../data/ids'
+import { useLearningFilter } from '../../composables/progress'
+const { query, filter, matches, progress } = useLearningFilter()
 
-const ws = reactive(words)
+const ws = computed(() => words.map(cat => ({ ...cat, words: cat.words.filter(w => matches(readingId(cat.title, w), w.slice(1).flat().join(' '))) })).filter(cat => cat.words.length))
+const ids = words.flatMap(cat => cat.words.map(w => readingId(cat.title, w)))
+const visibleIds = computed(() => ws.value.flatMap(cat => cat.words.map(w => readingId(cat.title, w))))
 
-const keyword = ref('')
+const hideAnswers = ref(false)
+onUnmounted(() => audio?.pause())
 
 let audio = null
 function play(word) {
@@ -12,14 +18,18 @@ function play(word) {
     audio.currentTime = 0
   }
   audio = document.createElement('audio')
-  audio.src = `https://dict.youdao.com/dictvoice?audio=${word}&type=1`
-  audio.play()
+  audio.src = `https://dict.youdao.com/dictvoice?audio=${encodeURIComponent(word)}&type=1`
+  audio.play().catch(() => {})
 }
 </script>
 
 <template>
   <div class="px-4 pt-6 2xl:px-0">
     <div class="border border-gray-200 rounded-lg bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800 sm:p-6">
+      <h1 class="text-xl font-bold">阅读考点词与同义替换</h1>
+      <p class="text-gray-500">沿用原项目的分组和内容，逐项记录学习状态。</p>
+      <label class="reading-recall"><input v-model="hideAnswers" type="checkbox">自测模式：隐藏词义与同义替换，点击查看答案</label>
+      <LearningToolbar v-model:query="query" v-model:filter="filter" :ids="ids" :visible-ids="visibleIds" />
       <!-- Card header -->
       <template
         v-for="cat in ws"
@@ -32,35 +42,12 @@ function play(word) {
             </h3>
             <span class="text-base font-normal text-gray-500 dark:text-gray-400">{{ cat.define }}</span>
           </div>
-          <div class="items-center sm:flex">
-            <div class="flex items-center">
-              <button
-                type="button"
-                class="rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white dark:bg-blue-600 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                @click="$router.push('listening/179practice')"
-              >
-                练习
-              </button>
-              <!-- <input type="text" name="email" class="ml-3 block w-full border border-gray-300 rounded-lg bg-gray-50 p-2.5 text-gray-900 dark:border-gray-600 focus:border-primary-500 dark:bg-gray-700 sm:text-sm dark:text-white focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 dark:placeholder-gray-400" placeholder="关键词"> -->
-              <div class="relative ml-2 flex-1">
-                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <svg class="h-4 w-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
-                  </svg>
-                </div>
-                <input
-                  v-model="keyword"
-                  type="search"
-                  class="block w-full border border-gray-300 rounded-lg bg-gray-50 p-2.5 pl-10 text-sm text-gray-900 dark:border-gray-600 focus:border-blue-500 dark:bg-gray-700 dark:text-white focus:ring-blue-500 dark:focus:border-blue-500 dark:focus:ring-blue-500 dark:placeholder-gray-400" placeholder="Search"
-                >
-              </div>
-            </div>
-          </div>
         </div>
-        <div class="mt-6">
+        <div class="mt-6 overflow-x-auto">
           <table class="w-full text-left text-sm text-gray-500 dark:text-gray-400">
             <thead class="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-700 dark:text-gray-400">
               <tr>
+                <th class="px-6 py-3">学习状态</th>
                 <th class="w-0 px-6 py-3">
                   排名
                 </th>
@@ -82,14 +69,16 @@ function play(word) {
             <tbody>
               <tr
                 v-for="w in cat.words"
-                :key="w.index"
+                :key="readingId(cat.title, w)"
+                :class="{ 'learning-mastered-row': progress.getStatus(readingId(cat.title, w)) === 'mastered' }"
                 class="border-b bg-white dark:border-gray-700 dark:bg-gray-800"
               >
+                <td class="px-6 py-4"><LearningStatus :item-id="readingId(cat.title, w)" :word="w[1]" /></td>
                 <td class="px-6 py-4">
                   {{ w[0] }}
                 </td>
                 <td class="px-6 py-4">
-                  <a href="javascript:;" class="i-carbon-volume-up-filled block" @click="play(w[1])" />
+                  <button type="button" class="i-carbon-volume-up-filled block" :aria-label="`播放 ${w[1]} 发音`" @click="play(w[1])" />
                 </td>
                 <th scope="row" class="whitespace-nowrap px-6 py-4 font-medium text-gray-900 dark:text-white">
                   <a
@@ -103,14 +92,13 @@ function play(word) {
                   class="px-6 py-4 italic"
                   v-html="w[2].join('<br>')"
                 />
-                <td
-                  class="px-6 py-4"
-                  v-html="w[3].join('<br>')"
-                />
                 <td class="px-6 py-4">
-                  {{ w[4].join(', ') }}
-                  <br>
-                  {{ w[5].length > 0 ? w[5] : '' }}
+                  <details v-if="hideAnswers" :key="`meaning-${readingId(cat.title, w)}`"><summary>查看词义</summary><p v-for="meaning in w[3]" :key="meaning">{{ meaning }}</p></details>
+                  <template v-else><p v-for="meaning in w[3]" :key="meaning">{{ meaning }}</p></template>
+                </td>
+                <td class="px-6 py-4">
+                  <details v-if="hideAnswers" :key="`answer-${readingId(cat.title, w)}`"><summary>查看同义替换</summary>{{ w[4].join(', ') }}<br>{{ w[5] }}</details>
+                  <template v-else>{{ w[4].join(', ') }}<br>{{ w[5] }}</template>
                 </td>
               </tr>
             </tbody>

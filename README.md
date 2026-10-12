@@ -12,7 +12,7 @@
   My <span>IELTS™</span>
 </h1>
 
-<h2>在线地址 <a href="https://hefengxian.github.io/my-ielts/#/">https://hefengxian.github.io/my-ielts/</a></h2>
+<h2>在线地址 <a href="https://felixbennettio.github.io/my-ielts/#/">https://felixbennettio.github.io/my-ielts/</a></h2>
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="public/screenshot/screenshot-home-dark.png">
@@ -20,6 +20,22 @@
   <img alt="Home" src="public/screenshot/screenshot-home-light.png">
 </picture>
 
+
+## 本 fork 的学习进度功能
+
+在线使用：**https://felixbennettio.github.io/my-ielts/#/**
+
+- 词汇真经、听力 179 考点词、阅读同义替换和听力拼写语料支持逐项勾选「已掌握」与标记「待复习」。
+- 支持按全部 / 未掌握 / 待复习 / 已掌握筛选，以及英文、中文释义和同义词搜索。
+- 支持将当前搜索和筛选结果批量标为已掌握或加入复习。词汇页面的搜索范围为当前章节。
+- 首页和「学习进度」页面展示各词库的掌握数量与进度。
+- 阅读支持隐藏释义和同义替换进行自测；原词汇、听力和打字练习继续保留。
+- 学习进度自动保存在**当前设备的当前浏览器**，不上传到 GitHub，不会自动跨设备同步。定期到「学习进度」导出 JSON；换设备后导入即可合并，同一词条保留较新的状态。
+- 清理浏览器网站数据或退出无痕模式可能删除进度，请先导出备份。
+
+本仓库通过 GitHub Actions 在更新 `master` 后自动测试、构建并发布到 GitHub Pages。首次使用需在仓库 Settings → Pages 中选择 GitHub Actions。
+
+资料与音频沿用 [原项目](https://github.com/hefengxian/my-ielts)，保留原项目的非商业使用要求。
 
 ## 概述
 

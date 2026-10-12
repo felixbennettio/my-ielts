@@ -10,13 +10,13 @@ const ws = reactive(words.map((v) => {
     },
     result: {
       checked: false,
-      errorWords: [],
+      errorWords: [] as string[],
     },
   }
   return item
 }))
 
-function onKeydown(e, word) {
+function onKeydown(e: KeyboardEvent, word: string) {
   if (e.key === '`') {
     e.preventDefault()
     play(word)
@@ -25,7 +25,7 @@ function onKeydown(e, word) {
 
 function play(word: string) {
   const audio = document.createElement('audio')
-  audio.src = `/179_audios/${word}.mp3`
+  audio.src = `${import.meta.env.BASE_URL}179_audios/${word}.mp3`
   audio.play()
 }
 function next(index: number) {

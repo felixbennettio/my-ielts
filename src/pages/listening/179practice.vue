@@ -1,5 +1,6 @@
 <script setup>
 import words from './listening179.json'
+import { listeningId } from '../../data/ids'
 
 const ws = reactive(words.map((v) => {
   const item = {
@@ -23,15 +24,16 @@ function onKeydown(e, word) {
   }
 }
 
+let audio = null
+onUnmounted(() => audio?.pause())
 function play(word) {
-  const audio = document.createElement('audio')
-  audio.src = `/179_audios/${word}.mp3`
-  audio.play()
+  audio?.pause()
+  audio = document.createElement('audio')
+  audio.src = `${import.meta.env.BASE_URL}179_audios/${word}.mp3`
+  audio.play().catch(() => {})
 }
 function next(index) {
   const i = index + 1
-  if (i >= words.length)
-    return
 
   // 校验结果
   const cw = ws[index]
@@ -53,6 +55,8 @@ function next(index) {
 
   // window.console.log(cw)
 
+  if (i >= words.length)
+    return
   const nw = words[i]
   play(nw.word)
   // 光标移动到下一个输入框
@@ -104,7 +108,7 @@ function next(index) {
               考点词/同义替换
             </th>
             <th class="px-6 py-3">
-              结果
+              结果 / 学习状态
             </th>
           </tr>
         </thead>
@@ -152,6 +156,7 @@ function next(index) {
               >
             </td>
             <td class="px-6 py-4">
+              <LearningStatus :item-id="listeningId(w.word)" :word="w.word" />
               <i v-if="w.result.checked && w.result.errorWords.length < 1" class="i-carbon-checkmark block text-green-700" />
               <p v-if="w.result.checked && w.result.errorWords.length > 0">
                 {{ w.result.errorWords.join(', ') }}

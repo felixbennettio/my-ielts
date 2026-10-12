@@ -1,14 +1,22 @@
 <script setup>
 import words from './listening179.json'
+import { listeningId } from '../../data/ids'
+import { useLearningFilter } from '../../composables/progress'
+const { query, filter, matches, progress } = useLearningFilter()
 
-const ws = reactive(words)
+const ws = computed(() => words.filter(w => matches(listeningId(w.word), [w.word, w.meaning, ...w.replace].join(' '))))
+const ids = words.map(w => listeningId(w.word))
+const visibleIds = computed(() => ws.value.map(w => listeningId(w.word)))
+let audio = null
+onUnmounted(() => audio?.pause())
 function play(word) {
-  const audio = document.createElement('audio')
+  audio?.pause()
+  audio = document.createElement('audio')
   audio.src = `179_audios/${word}.mp3`
-  audio.play()
+  audio.play().catch(() => {})
 }
 
-const keyword = ref('')
+
 </script>
 
 <template>
@@ -25,30 +33,20 @@ const keyword = ref('')
         <button
           type="button"
           class="rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white dark:bg-blue-600 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-          @click="$router.push('179practice')"
+          @click="$router.push('/listening/179practice')"
         >
           练习
         </button>
-        <!-- <input type="text" name="email" class="ml-3 block w-full border border-gray-300 rounded-lg bg-gray-50 p-2.5 text-gray-900 dark:border-gray-600 focus:border-primary-500 dark:bg-gray-700 sm:text-sm dark:text-white focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 dark:placeholder-gray-400" placeholder="关键词"> -->
-        <div class="relative ml-2 flex-1">
-          <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-            <svg class="h-4 w-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
-            </svg>
-          </div>
-          <input
-            v-model="keyword"
-            type="search"
-            class="block w-full border border-gray-300 rounded-lg bg-gray-50 p-2.5 pl-10 text-sm text-gray-900 dark:border-gray-600 focus:border-blue-500 dark:bg-gray-700 dark:text-white focus:ring-blue-500 dark:focus:border-blue-500 dark:focus:ring-blue-500 dark:placeholder-gray-400" placeholder="Search"
-          >
-        </div>
+
       </div>
     </div>
   </div>
-  <div class="mt-6">
+  <LearningToolbar v-model:query="query" v-model:filter="filter" :ids="ids" :visible-ids="visibleIds" />
+  <div class="mt-6 overflow-x-auto">
     <table class="w-full text-left text-sm text-gray-500 dark:text-gray-400">
       <thead class="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-700 dark:text-gray-400">
         <tr>
+          <th class="px-6 py-3">学习状态</th>
           <th class="w-0 px-6 py-3">
             #
           </th>
@@ -68,12 +66,13 @@ const keyword = ref('')
         </tr>
       </thead>
       <tbody>
-        <tr v-for="w in ws" :key="w.index" class="border-b bg-white dark:border-gray-700 dark:bg-gray-800">
+        <tr v-for="w in ws" :key="w.index" :class="{ 'learning-mastered-row': progress.getStatus(listeningId(w.word)) === 'mastered' }" class="border-b bg-white dark:border-gray-700 dark:bg-gray-800">
+          <td class="px-6 py-4"><LearningStatus :item-id="listeningId(w.word)" :word="w.word" /></td>
           <td class="px-6 py-4">
             {{ w.index }}
           </td>
           <td class="px-6 py-4">
-            <a href="javascript:;" class="i-carbon-volume-up-filled block" @click="play(w.word)" />
+            <button type="button" class="i-carbon-volume-up-filled block" :aria-label="`播放 ${w.word} 发音`" @click="play(w.word)" />
           </td>
           <th scope="row" class="whitespace-nowrap px-6 py-4 font-medium text-gray-900 dark:text-white">
             <a

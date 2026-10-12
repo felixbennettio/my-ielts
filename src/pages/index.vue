@@ -1,5 +1,9 @@
 <script setup lang="ts" generic="T extends any, O extends any">
 import { RouterLink } from 'vue-router'
+import { useProgress } from '../composables/progress'
+import { allLearningIds } from '../data/learning'
+const progress = useProgress()
+const totals = computed(() => progress.stats([...allLearningIds]))
 
 defineOptions({
   name: 'IndexPage',
@@ -28,7 +32,7 @@ const menus = reactive([
     label: '口语',
     icon: 'i-carbon-microphone',
     link: '/speaking',
-    desc: 'TODO 或许加入逻辑链相关内容',
+    desc: '栏目待补充，先专注已有学习资料',
   },
   {
     label: '阅读',
@@ -55,16 +59,13 @@ const menus = reactive([
   <div class="px-4 pt-6 2xl:px-0">
     <section class="mb-4 border border-gray-200 rounded-lg bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800 sm:p-6">
       <div class="mx-auto max-w-screen-xl px-4 py-8 lg:px-6 sm:py-16">
-        <h1 style="font-family: Charmonman;" class="mb-16 text-center text-6xl text-gray-900 dark:text-white">
-          Salvation lies within <span class="font-bold text-#f00">IELTS</span>
-        </h1>
-        <div class="mb-8 max-w-screen-md lg:mb-16">
-          <h2 class="mb-4 text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white">
-            我的 IELTS 备考中心
-          </h2>
-          <p class="text-gray-500 sm:text-xl dark:text-gray-400">
-            Hello, This is Frank. 这里包含我备考准备的一切，从词汇、语法开始...
-          </p>
+        <div class="learning-hero mb-10">
+          <span class="learning-eyebrow">MY IELTS · YOUR DAILY PRACTICE</span>
+          <h1>一步一步，掌握你的雅思词汇。</h1>
+          <p>词汇、听力、阅读，学过的内容随手勾选，难记的内容留待复习。</p>
+          <div class="learning-total"><strong>{{ totals.mastered }}</strong><span> / {{ totals.total }} 项已掌握</span><b>{{ totals.percent }}%</b></div>
+          <progress :value="totals.mastered" :max="totals.total || 1" aria-label="整体掌握进度" />
+          <div class="learning-hero-links"><RouterLink to="/vocabulary" class="learning-primary">开始学词汇 →</RouterLink><RouterLink to="/progress">查看进度与备份 ↗</RouterLink></div>
         </div>
         <div class="md:grid lg:grid-cols-3 md:grid-cols-2 md:gap-12 space-y-8 md:space-y-0">
           <RouterLink

@@ -1,5 +1,6 @@
 <script setup lang="ts" generic="T extends any, O extends any">
 const menus = reactive([
+  { label: '学习进度', icon: 'i-carbon-checkmark-outline', link: '/progress' },
   {
     label: '首页',
     icon: 'i-carbon-home',
@@ -41,18 +42,18 @@ const showMobileMenu = ref(false)
 
 <template>
   <header>
-    <nav class="fixed z-30 w-full border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
+    <nav class="fixed left-0 top-0 z-30 w-full border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
       <div class="mx-auto max-w-screen-2xl flex items-center justify-between">
         <div class="flex items-center justify-start">
-          <a href="/" class="mr-14 flex">
-            <span class="hidden self-center whitespace-nowrap text-2xl font-semibold sm:flex dark:text-white">My
+          <RouterLink to="/" class="mr-6 flex">
+            <span class="self-center whitespace-nowrap text-xl font-semibold sm:flex dark:text-white">My
               <span class="ml-1 text-red-600"> IELTS™</span>
             </span>
 
-          </a>
+          </RouterLink>
           <!-- Desktop menu -->
           <div class="hidden w-full items-center justify-between lg:order-1 lg:w-auto lg:flex">
-            <ul class="mt-4 flex flex-col items-center justify-items-center text-center align-middle text-sm font-medium lg:mt-0 lg:flex-row space-x-6 xl:space-x-8">
+            <ul class="mt-4 flex flex-col items-center justify-items-center text-center align-middle text-sm font-medium lg:mt-0 lg:flex-row space-x-4 xl:space-x-6">
               <li
                 v-for="m in menus"
                 :key="m.label"
@@ -69,22 +70,22 @@ const showMobileMenu = ref(false)
         </div>
         <div class="flex items-center justify-between lg:order-2">
           <a
-            href="https://github.com/hefengxian/my-ielts"
-            target="_blank"
+            href="https://github.com/felixbennettio/my-ielts"
+            target="_blank" rel="noopener noreferrer" aria-label="查看 GitHub 项目"
             class="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 hover:text-gray-900 focus:ring-4 focus:ring-gray-300 dark:hover:bg-gray-700 dark:hover:text-white dark:focus:ring-gray-600"
           >
             <div i-simple-icons-github />
           </a>
-          <button class="ml-2 rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 hover:text-gray-900 focus:ring-4 focus:ring-gray-300 dark:hover:bg-gray-700 dark:hover:text-white dark:focus:ring-gray-600" @click="toggleDark()">
+          <button aria-label="切换深色模式" class="ml-2 rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 hover:text-gray-900 focus:ring-4 focus:ring-gray-300 dark:hover:bg-gray-700 dark:hover:text-white dark:focus:ring-gray-600" @click="toggleDark()">
             <div i-carbon-sun dark:i-carbon-moon />
           </button>
 
           <button
             type="button"
             class="items-center rounded-lg p-2 text-gray-500 md:ml-2 lg:hidden hover:bg-gray-100 dark:text-gray-400 hover:text-gray-900 focus:ring-4 focus:ring-gray-300 dark:hover:bg-gray-700 dark:hover:text-white dark:focus:ring-gray-600"
-            @click="showMobileMenu = !showMobileMenu"
+            :aria-expanded="showMobileMenu" @click="showMobileMenu = !showMobileMenu"
           >
-            <span class="sr-only">Open menu</span>
+            <span class="sr-only">打开导航菜单</span>
             <svg class="h-6 w-6" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd" /></svg>
           </button>
         </div>

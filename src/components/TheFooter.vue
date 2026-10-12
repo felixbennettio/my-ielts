@@ -1,17 +1,6 @@
-<script setup>
-const year = (new Date()).getFullYear()
-</script>
-
 <template>
-  <footer class="px-4 py-6 md:flex md:items-center md:justify-between dark:bg-gray-800 2xl:px-0 md:py-10">
-    <p class="mb-4 flex-1 text-center text-sm text-gray-500 md:mb-0">
-      &copy; {{ year }} <a href="/" class="hover:underline" target="_blank">Frank</a>. All rights reserved.
-    </p>
-    <!-- <ul class="flex flex-wrap items-center justify-center">
-      <li><a href="#" class="mr-4 text-sm font-normal text-gray-500 md:mr-6 dark:text-gray-400 hover:underline">Terms</a></li>
-      <li><a href="#" class="mr-4 text-sm font-normal text-gray-500 md:mr-6 dark:text-gray-400 hover:underline">Licensing</a></li>
-      <li><a href="#" class="mr-4 text-sm font-normal text-gray-500 md:mr-6 dark:text-gray-400 hover:underline">Cookie Policy</a></li>
-      <li><a href="#" class="text-sm font-normal text-gray-500 dark:text-gray-400 hover:underline">Contact</a></li>
-    </ul> -->
+  <footer class="px-4 py-6 text-center text-sm text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+    <p>My IELTS · 学习记录保存在当前浏览器，请定期<RouterLink to="/progress" class="underline">备份进度</RouterLink>。</p>
+    <p>基于 <a href="https://github.com/hefengxian/my-ielts" target="_blank" rel="noopener noreferrer" class="underline">hefengxian/my-ielts</a> 改进 · 仅用于个人非商业学习</p>
   </footer>
 </template>

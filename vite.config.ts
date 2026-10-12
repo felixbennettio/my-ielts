@@ -10,7 +10,8 @@ import UnoCSS from 'unocss/vite'
 import VueMacros from 'unplugin-vue-macros/vite'
 
 export default defineConfig({
-  base: '',
+  base: '/my-ielts/',
+  cacheDir: process.env.VITE_CACHE_DIR || 'node_modules/.vite',
   server: {
     host: '0.0.0.0',
     port: 3333,
@@ -35,7 +36,7 @@ export default defineConfig({
     }),
 
     // https://github.com/hannoeru/vite-plugin-pages
-    Pages(),
+    Pages({ extensions: ['vue'] }),
 
     // https://github.com/antfu/unplugin-auto-import
     AutoImport({

@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import vocabulary from './vocabulary'
+import { vocabularyId } from '../../data/ids'
 
 const CHAPTER_KEY = 'vocabulary_typing_chapter'
 const chapters = Object.keys(vocabulary)
-const selectedChapter = ref(localStorage.getItem(CHAPTER_KEY) || chapters[0])
+let savedChapter = null
+try { savedChapter = localStorage.getItem(CHAPTER_KEY) } catch {}
+const selectedChapter = ref(savedChapter && chapters.includes(savedChapter) ? savedChapter : chapters[0])
 
 const currentWordIndex = ref(0)
 const userInput = ref('')
@@ -24,7 +27,7 @@ const currentWordData = computed(() => words.value[currentWordIndex.value])
 const currentWord = computed(() => currentWordData.value?.word[0] || '')
 
 watch(selectedChapter, (newVal) => {
-  localStorage.setItem(CHAPTER_KEY, newVal)
+  try { localStorage.setItem(CHAPTER_KEY, newVal) } catch {}
   reset()
 })
 
@@ -49,8 +52,10 @@ function playAudio() {
   }
   audio = document.createElement('audio')
   audio.src = audioPath
-  audio.play()
+  audio.play().catch(() => {})
 }
+
+onUnmounted(() => audio?.pause())
 
 // Normalize whitespace: replace non-breaking spaces and other unicode spaces with regular space
 function normalizeInput(s: string) {
@@ -125,6 +130,10 @@ onMounted(() => {
         </select>
       </div>
 
+      <div v-if="currentWordData && !isFinished" class="mb-6 flex items-center justify-between">
+        <span class="text-sm text-gray-500">当前词的学习状态（与词汇页同步）</span>
+        <LearningStatus :item-id="vocabularyId(selectedChapter, currentWordData)" :word="currentWord" />
+      </div>
       <!-- Stats -->
       <div class="grid grid-cols-3 gap-4 mb-8">
         <div
