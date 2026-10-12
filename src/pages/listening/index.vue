@@ -29,6 +29,7 @@ const scoreTable = [
       <p>了解雅思听力，以及考试中的一些基本原则、技巧</p>
       <br>
       <p>评分表</p>
+      <div class="overflow-x-auto">
       <table class="w-full text-center text-sm text-gray-500 dark:text-gray-400">
         <tbody>
           <tr class="border bg-white dark:border-gray-700 dark:bg-gray-800">
@@ -43,6 +44,7 @@ const scoreTable = [
           </tr>
         </tbody>
       </table>
+      </div>
       <br>
       <ul class="ml-6 list-disc">
         <li>时限 30min</li>
